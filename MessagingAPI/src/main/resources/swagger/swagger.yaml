@@ -1,0 +1,77 @@
+swagger: '2.0'
+info:
+  title: SMTP Gateway API
+  description: Send messages via gateway
+  version: "1.0.0"
+# the domain of the service
+host: localhost
+schemes:
+  - http
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /messages:
+    post:
+      summary: Send message via SMTP
+      description: |
+        The messages endpoint enables the client to send messages to the email address in the URL
+      parameters:
+        - name: msgpayload
+          in: body
+          description: Message to payload to be send
+          required: true
+          schema:
+            $ref: '#/definitions/MessagePayload'
+      tags:
+        - Messages
+      responses:
+        200:
+          description: Message sent ok
+        501:
+          description: Failed to send message - system error
+          schema:
+            $ref: '#/definitions/Error'
+        400:
+          description: Failed to send message - invalid payload
+          schema:
+            $ref: '#/definitions/Error'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: check is server alive
+      description: |
+        Simple check to see if the api is up
+      tags:
+        - Messages
+      responses:
+        200:
+          description: Server up
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  MessagePayload:
+    type: object
+    properties:
+      senderemail:
+        type: string
+      recipientemail: 
+        type: string
+      subject:
+        type: string
+      message:
+        type: string
+  MessageCorrelation:
+    type: object
+    properties:
+      message:
+        type: string
+  Error:
+    type: object
+    properties:
+      message:
+        type: string

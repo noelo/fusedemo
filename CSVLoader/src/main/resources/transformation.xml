@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://dozer.sourceforge.net http://dozer.sourceforge.net/schema/beanmapping.xsd">
+    <configuration>
+        <wildcard>true</wildcard>
+    </configuration>
+    <mapping>
+        <class-a>com.redhat.demo.csv.BulkEmailCSVRecord</class-a>
+        <class-b>com.redhat.demo.model.MessagePayload</class-b>
+        <field>
+            <a>emailBody</a>
+            <b>message</b>
+        </field>
+        <field>
+            <a>RecipientEmail</a>
+            <b>recipientemail</b>
+        </field>
+        <field>
+            <a>SenderEmail</a>
+            <b>senderemail</b>
+        </field>
+        <field>
+            <a>emailSubject</a>
+            <b>subject</b>
+        </field>
+    </mapping>
+</mappings>

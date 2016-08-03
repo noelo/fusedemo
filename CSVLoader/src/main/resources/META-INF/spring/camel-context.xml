@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:cxf="http://camel.apache.org/schema/cxf" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd              http://www.springframework.org/schema/osgi              http://www.springframework.org/schema/osgi/spring-osgi.xsd              http://camel.apache.org/schema/cxf              http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd              http://camel.apache.org/schema/spring              http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<cxf:rsClient address="http://localhost:8181/cxf/rest/messages"
+		id="SMSRestService" loggingFeatureEnabled="false"
+		serviceClass="com.redhat.demo.api.MessagesApi" />
+	<camelContext id="_camelContext1" xmlns="http://camel.apache.org/schema/spring"
+		xmlns:order="http://fabric8.com/examples/order/v7">
+		<endpoint id="csvtojson"
+			uri="dozer:csvtojson?sourceModel=com.redhat.demo.csv.BulkEmailCSVRecord&amp;targetModel=com.redhat.demo.model.MessagePayload&amp;mappingFile=transformation.xml" />
+		<dataFormats>
+			<bindy classType="com.redhat.demo.csv.BulkEmailCSVRecord" id="bindyDataformat"
+				type="Csv" />
+		</dataFormats>
+		<route id="_route1">
+			<description>CSV File Import</description>
+			<from id="_from1" uri="file:src/data/?noop=true" />
+			<split id="_split1">
+				<tokenize token="\n" />
+				<unmarshal id="_unmarshal1" ref="bindyDataformat" />
+				<to id="_to1" uri="direct:csvtojson" />
+			</split>
+		</route>
+		<route id="_route2">
+			<from id="_from2" uri="direct:csvtojson" />
+			<to id="_to2" uri="ref:csvtojson" />
+			<setHeader headerName="operationName" id="_setHeader1">
+				<simple>messagesPost</simple>
+			</setHeader>
+			<to id="_to3" uri="cxfrs:bean:SMSRestService" />
+			<onException id="_onException2">
+				<exception>org.apache.camel.component.cxf.CxfOperationException</exception>
+				<redeliveryPolicy maximumRedeliveries="2"
+					redeliveryDelay="2000" logRetryAttempted="TRUE" 
+					retryAttemptedLogLevel="WARN" retriesExhaustedLogLevel="ERROR" />
+				<handled>
+					<constant>true</constant>
+				</handled>
+			</onException>
+		</route>
+	</camelContext>
+</beans>
