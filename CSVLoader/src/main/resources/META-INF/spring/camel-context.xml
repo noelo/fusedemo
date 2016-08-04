@@ -4,7 +4,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd              http://www.springframework.org/schema/osgi              http://www.springframework.org/schema/osgi/spring-osgi.xsd              http://camel.apache.org/schema/cxf              http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd              http://camel.apache.org/schema/spring              http://camel.apache.org/schema/spring/camel-spring.xsd">
 	<cxf:rsClient address="http://localhost:8181/cxf/rest/messages"
-		id="SMSRestService" loggingFeatureEnabled="false"
+		id="SMSRestService" loggingFeatureEnabled="true"
 		serviceClass="com.redhat.demo.api.MessagesApi" />
 	<bean class="org.springframework.jms.connection.JmsTransactionManager"
 		id="jmsTransactionManager">
@@ -13,8 +13,8 @@
 	<bean class="org.apache.activemq.ActiveMQConnectionFactory" id="jmsConnectionFactory">
 		<property name="brokerURL" value="tcp://localhost:61616" />
 	</bean>
-	<camelContext id="_camelContext1" xmlns="http://camel.apache.org/schema/spring">
-		<!-- xmlns:order="http://fabric8.com/examples/order/v7"> -->
+	<camelContext id="_camelContext1" trace="true"
+		xmlns="http://camel.apache.org/schema/spring">
 		<endpoint id="csvtojson"
 			uri="dozer:csvtojson?sourceModel=com.redhat.demo.csv.BulkEmailCSVRecord&amp;targetModel=com.redhat.demo.model.MessagePayload&amp;mappingFile=transformation.xml" />
 		<dataFormats>
@@ -30,9 +30,12 @@
 					uri="activemq:queue:{{sys:localtestq:prodqueue}}?username=admin&amp;password=admin" />
 			</split>
 		</route>
-		<route id="_route2">
+		<route id="_route2" trace="true">
 			<from id="_to4"
 				uri="activemq:queue:{{sys:localtestq:prodqueue}}?transacted=true&amp;username=admin&amp;password=admin" />
+			<setProperty id="_setProperty1" propertyName="orig_msg">
+				<simple>${body}</simple>
+			</setProperty>
 			<to id="_to2" uri="ref:csvtojson" />
 			<setHeader headerName="operationName" id="_setHeader1">
 				<simple>messagesPost</simple>
@@ -41,14 +44,19 @@
 			<onException id="_onException2">
 				<exception>org.apache.camel.component.cxf.CxfOperationException</exception>
 				<redeliveryPolicy logRetryAttempted="TRUE"
-					maximumRedeliveries="2" redeliveryDelay="2000"
+					maximumRedeliveries="0" redeliveryDelay="2000"
 					retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN" />
 				<handled>
 					<constant>true</constant>
 				</handled>
-				<log message="About to exit ${body}" />
-				<to id="_to4" uri="activemq:queue:{{sys:localtestq:prodqueue}}Fail?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object"/>
+				<setBody id="_setBody1">
+					<simple>${exchangeProperty.orig_msg}</simple>
+				</setBody>
+				<log id="_log1" message="About to exit ${body}" />
+				<to id="_to4"
+					uri="activemq:queue:{{sys:localtestq:prodqueue}}Fail?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
 			</onException>
+
 		</route>
 	</camelContext>
 </beans>
