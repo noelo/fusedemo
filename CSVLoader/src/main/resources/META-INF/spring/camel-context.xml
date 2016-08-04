@@ -4,8 +4,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd              http://www.springframework.org/schema/osgi              http://www.springframework.org/schema/osgi/spring-osgi.xsd              http://camel.apache.org/schema/cxf              http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd              http://camel.apache.org/schema/spring              http://camel.apache.org/schema/spring/camel-spring.xsd">
 	<cxf:rsClient address="http://localhost:8181/cxf/rest/messages"
-		id="SMSRestService" loggingFeatureEnabled="true"
+		id="SMSRestService" loggingFeatureEnabled="false"
 		serviceClass="com.redhat.demo.api.MessagesApi" />
+	<bean class="com.redhat.demo.exception.ProcessingException" id="processingException" />
+	<bean class="com.redhat.demo.exception.SystemException" id="systemException" />
 	<bean class="org.springframework.jms.connection.JmsTransactionManager"
 		id="jmsTransactionManager">
 		<property name="connectionFactory" ref="jmsConnectionFactory" />
@@ -40,11 +42,24 @@
 			<setHeader headerName="operationName" id="_setHeader1">
 				<simple>messagesPost</simple>
 			</setHeader>
-			<to id="_to3" uri="cxfrs:bean:SMSRestService" />
+			<to id="_to3" pattern="InOut"
+				uri="cxfrs:bean:SMSRestService?throwExceptionOnFailure=false" />
+			<choice id="_choice1">
+				<when id="_when1">
+					<simple>${headers.CamelHttpResponseCode} &gt;= 500</simple>
+					<log id="_log2" message="500 exception" />
+					<throwException id="_throwException1" ref="systemException" />
+				</when>
+				<when id="_when2">
+					<simple>${headers.CamelHttpResponseCode} &gt;= 400</simple>
+					<log id="_log3" message="400 exception" />
+					<throwException id="_throwException2" ref="processingException" />
+				</when>
+			</choice>
 			<onException id="_onException2">
-				<exception>org.apache.camel.component.cxf.CxfOperationException</exception>
+				<exception>com.redhat.demo.exception.SystemException</exception>
 				<redeliveryPolicy logRetryAttempted="TRUE"
-					maximumRedeliveries="0" redeliveryDelay="2000"
+					maximumRedeliveries="3" redeliveryDelay="5000"
 					retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN" />
 				<handled>
 					<constant>true</constant>
@@ -52,11 +67,22 @@
 				<setBody id="_setBody1">
 					<simple>${exchangeProperty.orig_msg}</simple>
 				</setBody>
-				<log id="_log1" message="About to exit ${body}" />
 				<to id="_to4"
-					uri="activemq:queue:{{sys:localtestq:prodqueue}}Fail?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
+					uri="activemq:queue:{{sys:localtestq:prodqueue}}FailSystem?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
 			</onException>
-
+			<onException id="_onException3">
+				<exception>com.redhat.demo.exception.ProcessingException</exception>
+				<redeliveryPolicy logRetryAttempted="TRUE" disableRedelivery="true"
+					retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN" />
+				<handled>
+					<constant>true</constant>
+				</handled>
+				<setBody id="_setBody1">
+					<simple>${exchangeProperty.orig_msg}</simple>
+				</setBody>
+				<to id="_to4"
+					uri="activemq:queue:{{sys:localtestq:prodqueue}}FailProcessing?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
+			</onException>
 		</route>
 	</camelContext>
 </beans>
