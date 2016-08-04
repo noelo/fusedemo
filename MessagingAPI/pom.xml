@@ -197,9 +197,11 @@
 							<!-- <addCompileSourceRoot>false</addCompileSourceRoot> -->
 							<inputSpec>${basedir}/src/main/resources/swagger/swagger.yaml</inputSpec>
 							<modelPackage>com.redhat.demo.model</modelPackage>
-							<apiPackage>com.redhat.demo.api</apiPackage>
+ 							<apiPackage>com.redhat.demo.api</apiPackage>
+							<serializableModel>true</serializableModel>
 							<language>jaxrs-cxf</language>
 							<configOptions>
+								<serializableModel>true</serializableModel>
 								<sourceFolder>src/gen/java/main</sourceFolder>
 							</configOptions>
 						</configuration>
