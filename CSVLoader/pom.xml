@@ -24,10 +24,10 @@
     <fabric8.label.group>quickstarts</fabric8.label.group>
     <docker.maven.plugin.version>0.13.6</docker.maven.plugin.version>
     <camel.version>2.15.1.redhat-621084</camel.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cxf.version>2.15.1.redhat-621084</cxf.version>
-    <fabric8.dockerUser>fabric8/</fabric8.dockerUser>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <fabric8.label.component>${project.artifactId}</fabric8.label.component>
+    <fabric8.dockerUser>fabric8/</fabric8.dockerUser>
     <fuse.version>6.2.1.redhat-084</fuse.version>
   </properties>
   <dependencyManagement>
@@ -142,6 +142,14 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-dozer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-camel</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-jms</artifactId>
     </dependency>
   </dependencies>
   <repositories>

@@ -4,7 +4,7 @@ import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
 @CsvRecord( separator = "," )
-public class BulkEmailCSVRecord {
+public class BulkEmailCSVRecord implements java.io.Serializable{
 	
 	public String getSenderEmail() {
 		return SenderEmail;
@@ -60,8 +60,11 @@ public class BulkEmailCSVRecord {
 	
 	@DataField(pos = 5,required = false)
 	private String emailBody;
-	
-	
-	
 
+	@Override
+	public String toString() {
+		return "BulkEmailCSVRecord [SenderEmail=" + SenderEmail + ", RecipientEmail=" + RecipientEmail
+				+ ", emailSubject=" + emailSubject + ", emailPriority=" + emailPriority + ", emailBody=" + emailBody
+				+ "]";
+	}
 }
