@@ -1,88 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:cxf="http://camel.apache.org/schema/cxf" xmlns:osgi="http://www.springframework.org/schema/osgi"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd              http://www.springframework.org/schema/osgi              http://www.springframework.org/schema/osgi/spring-osgi.xsd              http://camel.apache.org/schema/cxf              http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd              http://camel.apache.org/schema/spring              http://camel.apache.org/schema/spring/camel-spring.xsd">
-	<cxf:rsClient address="http://localhost:8181/cxf/rest/messages"
-		id="SMSRestService" loggingFeatureEnabled="false"
-		serviceClass="com.redhat.demo.api.MessagesApi" />
-	<bean class="com.redhat.demo.exception.ProcessingException" id="processingException" />
-	<bean class="com.redhat.demo.exception.SystemException" id="systemException" />
-	<bean class="org.springframework.jms.connection.JmsTransactionManager"
-		id="jmsTransactionManager">
-		<property name="connectionFactory" ref="jmsConnectionFactory" />
-	</bean>
-	<bean class="org.apache.activemq.ActiveMQConnectionFactory" id="jmsConnectionFactory">
-		<property name="brokerURL" value="tcp://localhost:61616" />
-	</bean>
-	<camelContext id="_camelContext1" trace="true"
-		xmlns="http://camel.apache.org/schema/spring">
-		<endpoint id="csvtojson"
-			uri="dozer:csvtojson?sourceModel=com.redhat.demo.csv.BulkEmailCSVRecord&amp;targetModel=com.redhat.demo.model.MessagePayload&amp;mappingFile=transformation.xml" />
-		<dataFormats>
-			<bindy classType="com.redhat.demo.csv.BulkEmailCSVRecord" id="bindyDataformat"
-				type="Csv" />
-		</dataFormats>
-		<route id="_route1">
-			<from id="_from1" uri="file:src/data/?noop=true" />
-			<split id="_split1">
-				<tokenize token="\n" />
-				<unmarshal id="_unmarshal1" ref="bindyDataformat" />
-				<to id="_to1"
-					uri="activemq:queue:{{sys:localtestq:prodqueue}}?username=admin&amp;password=admin" />
-			</split>
-		</route>
-		<route id="_route2" trace="true">
-			<from id="_to4"
-				uri="activemq:queue:{{sys:localtestq:prodqueue}}?transacted=true&amp;username=admin&amp;password=admin" />
-			<setProperty id="_setProperty1" propertyName="orig_msg">
-				<simple>${body}</simple>
-			</setProperty>
-			<to id="_to2" uri="ref:csvtojson" />
-			<setHeader headerName="operationName" id="_setHeader1">
-				<simple>messagesPost</simple>
-			</setHeader>
-			<to id="_to3" pattern="InOut"
-				uri="cxfrs:bean:SMSRestService?throwExceptionOnFailure=false" />
-			<choice id="_choice1">
-				<when id="_when1">
-					<simple>${headers.CamelHttpResponseCode} &gt;= 500</simple>
-					<log id="_log2" message="500 exception" />
-					<throwException id="_throwException1" ref="systemException" />
-				</when>
-				<when id="_when2">
-					<simple>${headers.CamelHttpResponseCode} &gt;= 400</simple>
-					<log id="_log3" message="400 exception" />
-					<throwException id="_throwException2" ref="processingException" />
-				</when>
-			</choice>
-			<onException id="_onException2">
-				<exception>com.redhat.demo.exception.SystemException</exception>
-				<redeliveryPolicy logRetryAttempted="TRUE"
-					maximumRedeliveries="3" redeliveryDelay="5000"
-					retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN" />
-				<handled>
-					<constant>true</constant>
-				</handled>
-				<setBody id="_setBody1">
-					<simple>${exchangeProperty.orig_msg}</simple>
-				</setBody>
-				<to id="_to4"
-					uri="activemq:queue:{{sys:localtestq:prodqueue}}FailSystem?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
-			</onException>
-			<onException id="_onException3">
-				<exception>com.redhat.demo.exception.ProcessingException</exception>
-				<redeliveryPolicy logRetryAttempted="TRUE" disableRedelivery="true"
-					retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN" />
-				<handled>
-					<constant>true</constant>
-				</handled>
-				<setBody id="_setBody1">
-					<simple>${exchangeProperty.orig_msg}</simple>
-				</setBody>
-				<to id="_to4"
-					uri="activemq:queue:{{sys:localtestq:prodqueue}}FailProcessing?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
-			</onException>
-		</route>
-	</camelContext>
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:osgi="http://www.springframework.org/schema/osgi"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans              http://www.springframework.org/schema/beans/spring-beans.xsd              http://www.springframework.org/schema/osgi              http://www.springframework.org/schema/osgi/spring-osgi.xsd              http://camel.apache.org/schema/cxf              http://camel.apache.org/schema/cxf/camel-cxf-spring.xsd              http://camel.apache.org/schema/spring              http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <cxf:rsClient address="http://localhost:8181/cxf/rest/messages"
+        id="SMSRestService" loggingFeatureEnabled="false" serviceClass="com.redhat.demo.api.MessagesApi"/>
+    <bean class="com.redhat.demo.exception.ProcessingException" id="processingException"/>
+    <bean class="com.redhat.demo.exception.SystemException" id="systemException"/>
+    <bean
+        class="org.springframework.jms.connection.JmsTransactionManager" id="jmsTransactionManager">
+        <property name="connectionFactory" ref="jmsConnectionFactory"/>
+    </bean>
+    <bean class="org.apache.activemq.ActiveMQConnectionFactory" id="jmsConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:61616"/>
+    </bean>
+    <camelContext id="_camelContext1" trace="true" xmlns="http://camel.apache.org/schema/spring">
+        <endpoint id="csvtojson" uri="dozer:csvtojson?sourceModel=com.redhat.demo.csv.BulkEmailCSVRecord&amp;targetModel=com.redhat.demo.model.MessagePayload&amp;mappingFile=transformation.xml"/>
+        <dataFormats>
+            <bindy classType="com.redhat.demo.csv.BulkEmailCSVRecord"
+                id="bindyDataformat" type="Csv"/>
+        </dataFormats>
+        <route id="_route1">
+            <from id="_from1" uri="file:{{sys:filelocn:/tmp/}}?noop=true&amp;antInclude=*.csv"/>
+            <split id="_split1">
+                <tokenize token="\n"/>
+                <unmarshal id="_unmarshal1" ref="bindyDataformat"/>
+                <to id="_to1" uri="activemq:queue:{{sys:localtestq:prodqueue}}?username=admin&amp;password=admin"/>
+            </split>
+        </route>
+        <route id="_route2" trace="true">
+            <from id="_to4" uri="activemq:queue:{{sys:localtestq:prodqueue}}?transacted=true&amp;username=admin&amp;password=admin"/>
+            <setProperty id="_setProperty1" propertyName="orig_msg">
+                <simple>${body}</simple>
+            </setProperty>
+            <to id="_to2" uri="ref:csvtojson"/>
+            <setHeader headerName="operationName" id="_setHeader1">
+                <simple>messagesPost</simple>
+            </setHeader>
+            <to id="_to3" pattern="InOut" uri="cxfrs:bean:SMSRestService?throwExceptionOnFailure=false"/>
+            <choice id="_choice1">
+                <when id="_when1">
+                    <simple>${headers.CamelHttpResponseCode} &gt;= 500</simple>
+                    <log id="_log2" message="500 exception"/>
+                    <throwException id="_throwException1" ref="systemException"/>
+                </when>
+                <when id="_when2">
+                    <simple>${headers.CamelHttpResponseCode} &gt;= 400</simple>
+                    <log id="_log3" message="400 exception"/>
+                    <throwException id="_throwException2" ref="processingException"/>
+                    <to id="_to5" uri="direct:name"/>
+                </when>
+            </choice>
+            <onException id="_onException2">
+                <exception>com.redhat.demo.exception.SystemException</exception>
+                <redeliveryPolicy logRetryAttempted="TRUE"
+                    maximumRedeliveries="3" redeliveryDelay="5000"
+                    retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN"/>
+                <handled>
+                    <constant>true</constant>
+                </handled>
+                <setBody id="_setBody1">
+                    <simple>${exchangeProperty.orig_msg}</simple>
+                </setBody>
+                <to id="_to4" uri="activemq:queue:{{sys:localtestq:prodqueue}}FailSystem?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object"/>
+            </onException>
+            <onException id="_onException3">
+                <exception>com.redhat.demo.exception.ProcessingException</exception>
+                <redeliveryPolicy disableRedelivery="true"
+                    logRetryAttempted="TRUE"
+                    retriesExhaustedLogLevel="ERROR" retryAttemptedLogLevel="WARN"/>
+                <handled>
+                    <constant>true</constant>
+                </handled>
+                <setBody id="_setBody1">
+                    <simple>${exchangeProperty.orig_msg}</simple>
+                </setBody>
+                <to id="_to4" uri="activemq:queue:{{sys:localtestq:prodqueue}}FailProcessing?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object"/>
+            </onException>
+        </route>
+    </camelContext>
 </beans>
