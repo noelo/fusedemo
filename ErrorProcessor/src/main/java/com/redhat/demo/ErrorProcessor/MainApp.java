@@ -20,8 +20,6 @@ public class MainApp {
 	public static void main(String... args) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 
-//		ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616?username=admin&amp;password=admin");
-
 		ActiveMQComponent amqpart = ActiveMQComponent.activeMQComponent("tcp://localhost:61616");
 		amqpart.setUserName("admin");
 		amqpart.setPassword("admin");
