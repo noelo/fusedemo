@@ -7,8 +7,10 @@
         id="SMSRestService" loggingFeatureEnabled="false" serviceClass="com.redhat.demo.api.MessagesApi"/>
     <bean class="com.redhat.demo.exception.ProcessingException" id="processingException"/>
     <bean class="com.redhat.demo.exception.SystemException" id="systemException"/>
-    <bean id="metricspolicy" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy"/>
-    <bean id="metricsRoutePolicyFactory" class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"/>
+    <bean
+        class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy" id="metricspolicy"/>
+    <bean
+        class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory" id="metricsRoutePolicyFactory"/>
     <bean
         class="org.springframework.jms.connection.JmsTransactionManager" id="jmsTransactionManager">
         <property name="connectionFactory" ref="jmsConnectionFactory"/>
@@ -32,7 +34,7 @@
                 <to id="amq_producer" uri="activemq:queue:{{sys:localtestq:prodqueue}}?username=admin&amp;password=admin"/>
             </split>
         </route>
-        <route id="RESTWSProducerRoute" trace="false" >
+        <route id="RESTWSProducerRoute" trace="false">
             <from id="amq_consumer" uri="activemq:queue:{{sys:localtestq:prodqueue}}?transacted=true&amp;username=admin&amp;password=admin"/>
             <setProperty id="preserve_orig_message" propertyName="orig_msg">
                 <simple>${body}</simple>
