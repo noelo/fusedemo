@@ -26,7 +26,7 @@
                 id="bindyDataformat" type="Csv"/>
             <json id="transform-json" library="Jackson"/>
         </dataFormats>
-        <route id="fileconsumer" routePolicyRef="metricspolicy">
+        <route autoStartup="false" id="fileconsumer" routePolicyRef="metricspolicy">
             <from id="csvconsumer" uri="file:{{sys:filelocn:/tmp/}}?noop=true&amp;antInclude=*.csv"/>
             <split id="contentsplitter">
                 <tokenize token="\n"/>
