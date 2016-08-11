@@ -1,0 +1,10 @@
+{
+  "semail": "",
+  "number": 123,
+  "object": {
+    "msg": "",
+    "sub": "d",
+    "demail": "f"
+  },
+  "string": "Demo Test"
+}

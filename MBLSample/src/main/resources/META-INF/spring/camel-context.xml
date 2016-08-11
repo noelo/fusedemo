@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/cxf      http://camel.apache.org/schema/cxf/camel-cxf.xsd        http://cxf.apache.org/jaxrs      http://cxf.apache.org/schemas/jaxrs.xsd        http://camel.apache.org/schema/spring      http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <cxf:rsServer address="http://localhost:9091/rest"
+        id="SMSRestService" loggingFeatureEnabled="true" serviceClass="com.redhat.demo.api.MessagesApi"/>
+    <cxf:rsClient address="http://localhost:9091/rest/"
+        id="SMSRestServiceClient" loggingFeatureEnabled="false" serviceClass="com.redhat.demo.api.MessagesApi"/>
+    <camelContext id="context-person-inbound" trace="true" xmlns="http://camel.apache.org/schema/spring"/>
+</beans>
