@@ -14,9 +14,6 @@
 	<bean
 		class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"
 		id="metricsRoutePolicyFactory" />
-	<!-- <bean class="org.springframework.jms.connection.JmsTransactionManager" 
-		id="jmsTransactionManager"> <property name="connectionFactory" ref="jmsConnectionFactory" 
-		/> </bean> -->
 	<bean class="org.apache.activemq.ActiveMQConnectionFactory" id="jmsConnectionFactory">
 		<property name="brokerURL" value="vm://localhost?broker.persistent=false" />
 	</bean>
@@ -91,19 +88,6 @@
 			</setHeader>
 			<to id="invoke_rest_ws" pattern="InOut"
 				uri="cxfrs:bean:SMSRestService?throwExceptionOnFailure=true" />
-<!-- 			<choice id="result_cbr">
-				<when id="500 error case">
-					<simple>${headers.CamelHttpResponseCode} &gt;= 500</simple>
-					<log id="_log2" message="500 exception" />
-					<throwException id="_throwException1" ref="systemException" />
-				</when>
-				<when id="400 error case">
-					<simple>${headers.CamelHttpResponseCode} &gt;= 400</simple>
-					<log id="_log3" message="400 exception" />
-					<throwException id="_throwException2" ref="processingException" />
-					<to id="_to5" uri="direct:name" />
-				</when>
-			</choice> -->
 		</route>
 		<route id="Wiretap route">
 			<from id="_from2" uri="direct:tap" />

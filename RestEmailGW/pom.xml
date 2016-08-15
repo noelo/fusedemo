@@ -9,21 +9,28 @@
 	<packaging>bundle</packaging>
 
 	<properties>
-		<jboss.fuse.bom.version>6.2.1.redhat-084</jboss.fuse.bom.version>
-		<fabric8.label.container>java</fabric8.label.container>
-		<fabric8.iconRef>camel</fabric8.iconRef>
-		<fabric8.version>2.2.0.redhat-079</fabric8.version>
-		<docker.image>${fabric8.dockerUser}${project.artifactId}:${project.version}</docker.image>
-		<docker.port.container.jolokia>8778</docker.port.container.jolokia>
-		<docker.from>registry.access.redhat.com/jboss-fuse-6/fis-java-openshift:1.0</docker.from>
-		<fabric8.label.group>quickstarts</fabric8.label.group>
-		<docker.maven.plugin.version>0.13.6</docker.maven.plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<camel.version>2.15.1.redhat-621084</camel.version>
 		<cxf.version>2.15.1.redhat-621084</cxf.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fabric8.label.component>${project.artifactId}</fabric8.label.component>
-		<fabric8.dockerUser>fabric8/</fabric8.dockerUser>
+		<jboss.fuse.bom.version>6.2.1.redhat-084</jboss.fuse.bom.version>
 		<fuse.version>6.2.1.redhat-084</fuse.version>
+		<fabric8.version>2.2.0.redhat-079</fabric8.version>
+
+		<docker.image>${fabric8.dockerUser}${project.artifactId}:${project.version}</docker.image>
+		<docker.port.container.http>8080</docker.port.container.http>
+		<docker.port.container.jolokia>8778</docker.port.container.jolokia>
+		<docker.from>registry.access.redhat.com/jboss-fuse-6/fis-java-openshift:1.0</docker.from>
+		<docker.maven.plugin.version>0.13.6</docker.maven.plugin.version>
+
+		<fabric8.service.name>${project.artifactId}</fabric8.service.name>
+		<fabric8.dockerUser>restsmtp/</fabric8.dockerUser>
+		<fabric8.service.port>8000</fabric8.service.port>
+		<fabric8.service.containerPort>http</fabric8.service.containerPort>
+
+		<fabric8.label.group>demo</fabric8.label.group>
+		<fabric8.label.component>${project.artifactId}</fabric8.label.component>
+		<fabric8.label.container>java</fabric8.label.container>
+		<fabric8.iconRef>camel</fabric8.iconRef>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -128,7 +135,10 @@
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-mail</artifactId>
-			<version>2.16.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-metrics</artifactId>
 		</dependency>
 	</dependencies>
 	<repositories>
@@ -248,9 +258,6 @@
 				<groupId>io.fabric8</groupId>
 				<artifactId>fabric8-maven-plugin</artifactId>
 				<version>${fabric8.version}</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
 				<executions>
 					<execution>
 						<id>json</id>
@@ -283,16 +290,12 @@
 						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>${docker.maven.plugin.version}</version>
 				<configuration>
-					<skip>true</skip>
 					<images>
 						<image>
 							<name>${docker.image}</name>
