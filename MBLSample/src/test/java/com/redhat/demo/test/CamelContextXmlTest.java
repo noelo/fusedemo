@@ -18,29 +18,85 @@ public class CamelContextXmlTest extends CamelSpringTestSupport {
 	protected ProducerTemplate input2Endpoint;
 
 	@Test
-	public void testCamelRoute() throws Exception {
+	public void testCamelRouteGet() throws Exception {
+		Exchange exchange = template.send("cxfrs://bean://SMSRestServiceClient?throwExceptionOnFailure",
+				new Processor() {
+					public void process(Exchange exchange) throws Exception {
+						exchange.setPattern(ExchangePattern.InOut);
+						Message inMessage = exchange.getIn();
+						inMessage.setHeader(CxfConstants.CAMEL_CXF_RS_USING_HTTP_API, Boolean.TRUE);
+						inMessage.setHeader(Exchange.HTTP_METHOD, "GET");
+						inMessage.setHeader(Exchange.HTTP_PATH, "/messages");
+						inMessage.setHeader(Exchange.ACCEPT_CONTENT_TYPE, "application/json");
+						inMessage.setHeader(Exchange.CONTENT_TYPE, "application/json");
+					}
+				});
+
+		assertEquals("Get a wrong response code", 403, exchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE));
+	}
+
+	@Test
+	public void testCamelRoutePost() throws Exception {
 
 		final MessagePayload testpayload = new MessagePayload();
 		testpayload.setMessage("this is a atest");
 		testpayload.setRecipientemail("recipient@test.com");
 		testpayload.setSenderemail("sender@test.com");
-		testpayload.setSubject("testmessage");		
+		testpayload.setSubject("testmessage");
 
-		Exchange exchange = template.send(
-				"cxfrs://bean://SMSRestServiceClient",
+		Exchange exchange = template.send("cxfrs://bean://SMSRestServiceClient?throwExceptionOnFailure",
 				new Processor() {
 					public void process(Exchange exchange) throws Exception {
 						exchange.setPattern(ExchangePattern.InOut);
 						Message inMessage = exchange.getIn();
-						inMessage.setHeader(CxfConstants.CAMEL_CXF_RS_USING_HTTP_API, Boolean.FALSE);
-						inMessage.setHeader(CxfConstants.OPERATION_NAME, "messagesGet");
+						inMessage.setHeader(CxfConstants.CAMEL_CXF_RS_USING_HTTP_API, Boolean.TRUE);
+						inMessage.setHeader(Exchange.HTTP_METHOD, "POST");
+						inMessage.setHeader(Exchange.HTTP_PATH, "/messages");
 						inMessage.setHeader(Exchange.ACCEPT_CONTENT_TYPE, "application/json");
 						inMessage.setHeader(Exchange.CONTENT_TYPE, "application/json");
 						inMessage.setBody(testpayload);
 					}
 				});
 
-		assertEquals("Get a wrong response code", 403, exchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE));
+		assertEquals("Get a wrong response code", 200, exchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE));
+	}
+
+	@Test
+	public void testCamelRoutePostMissingPayload() throws Exception {
+		Exchange exchange = template.send("cxfrs://bean://SMSRestServiceClient?throwExceptionOnFailure",
+				new Processor() {
+					public void process(Exchange exchange) throws Exception {
+						exchange.setPattern(ExchangePattern.InOut);
+						Message inMessage = exchange.getIn();
+						inMessage.setHeader(CxfConstants.CAMEL_CXF_RS_USING_HTTP_API, Boolean.TRUE);
+						inMessage.setHeader(Exchange.HTTP_METHOD, "POST");
+						inMessage.setHeader(Exchange.HTTP_PATH, "/messages");
+						inMessage.setHeader(Exchange.ACCEPT_CONTENT_TYPE, "application/json");
+						inMessage.setHeader(Exchange.CONTENT_TYPE, "application/json");
+						inMessage.setBody(null);
+					}
+				});
+
+		assertEquals("Get a wrong response code", 400, exchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE));
+	}
+
+	@Test
+	public void testCamelRoutePostInvalidPayload() throws Exception {
+		Exchange exchange = template.send("cxfrs://bean://SMSRestServiceClient?throwExceptionOnFailure",
+				new Processor() {
+					public void process(Exchange exchange) throws Exception {
+						exchange.setPattern(ExchangePattern.InOut);
+						Message inMessage = exchange.getIn();
+						inMessage.setHeader(CxfConstants.CAMEL_CXF_RS_USING_HTTP_API, Boolean.TRUE);
+						inMessage.setHeader(Exchange.HTTP_METHOD, "POST");
+						inMessage.setHeader(Exchange.HTTP_PATH, "/messages");
+						inMessage.setHeader(Exchange.ACCEPT_CONTENT_TYPE, "application/json");
+						inMessage.setHeader(Exchange.CONTENT_TYPE, "application/json");
+						inMessage.setBody("this is a test");
+					}
+				});
+
+		assertEquals("Get a wrong response code", 400, exchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE));
 	}
 
 	@Override

@@ -1,40 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:cxf="http://camel.apache.org/schema/cxf" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="        http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/cxf      http://camel.apache.org/schema/cxf/camel-cxf.xsd        http://cxf.apache.org/jaxrs      http://cxf.apache.org/schemas/jaxrs.xsd        http://camel.apache.org/schema/spring      http://camel.apache.org/schema/spring/camel-spring.xsd">
-	<cxf:rsServer address="{{sys:localresthost:}}/rest" id="SMSRestService"
-		loggingFeatureEnabled="true" serviceClass="com.redhat.demo.api.MessagesApi" />
-	<bean class="com.redhat.poc.impl.SMSGateway" id="SMSGWImplBean" />
-	<bean id="metricsRoutePolicyFactory"
-		class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory" />
-	<camelContext id="context-emailws-inbound" trace="true"
-		xmlns="http://camel.apache.org/schema/spring">
-		<propertyPlaceholder id="properties" location="route.properties" />
-		<onException id="SMTPExceptionHandler">
-			<exception>com.sun.mail.smtp.SMTPAddressFailedException</exception>
-			<handled>
-				<constant>true</constant>
-			</handled>
-			<to id="_to4" uri="bean:SMSGWImplBean?method=processValidationFailure" />
-		</onException>
-		<onException id="ConnectionExceptionHandler">
-			<exception>java.net.ConnectException</exception>
-			<handled>
-				<constant>true</constant>
-			</handled>
-			<to id="_to4" uri="bean:SMSGWImplBean?method=processSystemFailure" />
-		</onException>
-		<route id="restroute">
-			<from id="RESTEPR" uri="cxfrs:bean:SMSRestService" />
-			<to id="processMSG" uri="bean:SMSGWImplBean?method=processIncomingMsg" />
-			<to id="InvokeSMTPRoute" uri="direct:SMTPRoute" />
-			<to id="resultHandler" uri="bean:SMSGWImplBean?method=processSuccess" />
-		</route>
-		<route handleFault="true" id="SMTPRoute">
-			<from id="_from2" uri="direct:SMTPRoute" />
-			<to id="SMTPComponent" pattern="InOnly"
-				uri="smtp:{{smtphost}}:{{smtpport}}?subject=${header.emailSubject}&amp;from=${header.emailSender}&amp;to=${header.emailRecipient}" />
-		</route>
-	</camelContext>
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans      http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/cxf      http://camel.apache.org/schema/cxf/camel-cxf.xsd        http://cxf.apache.org/jaxrs      http://cxf.apache.org/schemas/jaxrs.xsd        http://camel.apache.org/schema/spring      http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <cxf:rsServer address="{{sys:localresthost:}}/rest"
+        id="SMSRestService" loggingFeatureEnabled="true" serviceClass="com.redhat.demo.api.MessagesApi"/>
+    <bean class="com.redhat.poc.impl.SMSGateway" id="SMSGWImplBean"/>
+<!--     <bean
+        class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory" id="metricsRoutePolicyFactory"/> -->
+    <camelContext id="context-emailws-inbound" trace="true" xmlns="http://camel.apache.org/schema/spring">
+        <propertyPlaceholder id="properties" location="route.properties"/>
+        <onException id="SMTPExceptionHandler">
+            <exception>com.sun.mail.smtp.SMTPAddressFailedException</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <to id="_to4" uri="bean:SMSGWImplBean?method=processValidationFailure"/>
+        </onException>
+        <onException id="ConnectionExceptionHandler">
+            <exception>java.net.ConnectException</exception>
+            <handled>
+                <constant>true</constant>
+            </handled>
+            <to id="_to4" uri="bean:SMSGWImplBean?method=processSystemFailure"/>
+        </onException>
+        <route id="restroute">
+            <from id="RESTEPR" uri="cxfrs:bean:SMSRestService"/>
+            <to id="processMSG" uri="bean:SMSGWImplBean?method=processIncomingMsg"/>
+            <to id="InvokeSMTPRoute" uri="direct:SMTPRoute"/>
+            <to id="resultHandler" uri="bean:SMSGWImplBean?method=processSuccess"/>
+        </route>
+        <route handleFault="true" id="SMTPRoute">
+            <from id="_from2" uri="direct:SMTPRoute"/>
+            <to id="SMTPComponent" pattern="InOnly" uri="smtp:{{smtphost}}:{{smtpport}}?subject=${header.emailSubject}&amp;from=${header.emailSender}&amp;to=${header.emailRecipient}"/>
+        </route>
+    </camelContext>
 </beans>
