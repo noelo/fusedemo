@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.redhat.demo</groupId>
-	<version>1.0</version>
+	<version>1.1</version> 
 	<artifactId>restemailgateway</artifactId>
 	<packaging>bundle</packaging>
 
@@ -16,7 +16,7 @@
 		<fuse.version>6.2.1.redhat-084</fuse.version>
 		<fabric8.version>2.2.0.redhat-079</fabric8.version>
 
-		<docker.image>${fabric8.dockerUser}${project.artifactId}:${project.version}</docker.image>
+		<docker.image>${fabric8.dockerUser}${project.artifactId}</docker.image>
 		<docker.port.container.http>8080</docker.port.container.http>
 		<docker.port.container.jolokia>8778</docker.port.container.jolokia>
 		<docker.from>registry.access.redhat.com/jboss-fuse-6/fis-java-openshift:1.0</docker.from>
