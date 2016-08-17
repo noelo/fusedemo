@@ -4,7 +4,7 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.redhat.demo</groupId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<artifactId>restemailgateway</artifactId>
 	<packaging>bundle</packaging>
 
@@ -31,6 +31,8 @@
 		<fabric8.label.component>${project.artifactId}</fabric8.label.component>
 		<fabric8.label.container>java</fabric8.label.container>
 		<fabric8.iconRef>camel</fabric8.iconRef>
+		
+		
 	</properties>
 	<dependencyManagement>
 		<dependencies>

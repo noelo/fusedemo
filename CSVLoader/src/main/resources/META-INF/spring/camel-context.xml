@@ -8,12 +8,17 @@
 		serviceClass="com.redhat.demo.api.MessagesApi" />
 	<bean class="com.redhat.demo.exception.ProcessingException" id="processingException" />
 	<bean class="com.redhat.demo.exception.SystemException" id="systemException" />
+
+	<bean id="registry" class="com.codahale.metrics.MetricRegistry" />
 	<bean
 		class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicy"
 		id="metricspolicy" />
 	<bean
 		class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"
-		id="metricsRoutePolicyFactory" />
+		id="metricsRoutePolicyFactory">
+		<property name="metricsRegistry" ref="registry" />
+		<property name="useJmx" value="true" />
+	</bean>
 	<bean class="org.apache.activemq.ActiveMQConnectionFactory" id="jmsConnectionFactory">
 		<property name="brokerURL" value="vm://localhost?broker.persistent=false" />
 	</bean>
@@ -32,7 +37,6 @@
 				type="Csv" />
 			<json id="transform-json" library="Jackson" />
 		</dataFormats>
-
 		<onException id="system_exception_handler">
 			<exception>org.apache.camel.component.cxf.CxfOperationException</exception>
 			<onWhen>
@@ -66,7 +70,6 @@
 			<to id="processing_error_queue_producer"
 				uri="activemq:queue:{{sys:localtestq:prodqueue}}FailProcessing?transacted=true&amp;username=admin&amp;password=admin&amp;jmsMessageType=Object" />
 		</onException>
-
 		<route id="fileconsumer" routePolicyRef="metricspolicy">
 			<from id="csvconsumer"
 				uri="file:{{sys:filelocn:/tmp/}}?noop=true&amp;antInclude=*.csv" />

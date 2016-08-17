@@ -6,11 +6,25 @@
 	<cxf:rsServer address="{{sys:localresthost:http://0.0.0.0:8080/cxf}}/rest"
 		id="SMSRestService" loggingFeatureEnabled="true"
 		serviceClass="com.redhat.demo.api.MessagesApi" />
-	<bean class="com.redhat.poc.impl.SMSGateway" id="SMSGWImplBean" />
+
+	<bean id="registry" class="com.codahale.metrics.MetricRegistry" />
+
 	<bean
 		class="org.apache.camel.component.metrics.routepolicy.MetricsRoutePolicyFactory"
-		id="metricsRoutePolicyFactory" />
-	<camelContext id="context-emailws-inbound" trace="true"
+		id="metricsRoutePolicyFactory">
+		<property name="metricsRegistry" ref="registry" />
+		<property name="useJmx" value="false" />
+	</bean>
+
+	<bean id="history"
+		class="org.apache.camel.component.metrics.messagehistory.MetricsMessageHistoryFactory">
+		<property name="metricsRegistry" ref="registry" />
+		<property name="useJmx" value="false" />
+	</bean>
+
+	<bean class="com.redhat.poc.impl.SMSGateway" id="SMSGWImplBean" />
+
+	<camelContext id="context-emailws-inbound" trace="false"
 		xmlns="http://camel.apache.org/schema/spring">
 		<propertyPlaceholder id="properties" location="route.properties" />
 		<onException id="SMTPExceptionHandler">
@@ -31,6 +45,7 @@
 		</onException>
 		<route id="restroute">
 			<from id="RESTEPR" uri="cxfrs:bean:SMSRestService" />
+			<to uri="metric:counter:Invocation?increment=1" />
 			<to id="processMSG" uri="bean:SMSGWImplBean?method=processIncomingMsg" />
 			<to id="InvokeSMTPRoute" uri="direct:SMTPRoute" />
 			<to id="resultHandler" uri="bean:SMSGWImplBean?method=processSuccess" />
